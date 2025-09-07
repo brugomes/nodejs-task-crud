@@ -42,6 +42,18 @@ The server will run on `http://localhost:3333`.
 
 This project uses a simple in-memory database (with optional persistence to `db.json`). No external database is required.
 
+## Importing tasks via CSV
+
+You can bulk upload tasks using the `listTasks.csv` file, which already exists in the src/ directory. This file should contain the columns `title` and `description` for each task you want to import.
+
+To import the tasks, run:
+
+```bash
+node src/import-csv.js
+```
+
+Each row in the CSV will be added as a new task to the local database.
+
 ## License
 
 MIT
