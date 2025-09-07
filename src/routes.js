@@ -8,6 +8,15 @@ function taskNotFound(res) {
   return res.writeHead(404).end(JSON.stringify({ message: 'Task not found.' }))
 }
 
+function validateTitleAndDescription(req, res) {
+  const { title, description } = req.body;
+  if (!title && !description) {
+    res.writeHead(400).end(JSON.stringify({ message: 'Title or description are required.' }));
+    return false;
+  }
+  return true;
+}
+
 export const routes = [
   {
     method: 'GET',
@@ -27,7 +36,9 @@ export const routes = [
     method: 'POST',
     path: buildRoutePath('/task'),
     handler: (req, res) => {
-      const { title, description } = req.body
+      if (!validateTitleAndDescription(req, res)) return;
+
+      const { title, description } = req.body;
 
       const task = {
         id: randomUUID(),
@@ -36,34 +47,36 @@ export const routes = [
         completed_at: null,
         created_at: new Date(),
         updated_at: new Date()
-      }
+      };
 
-      database.insert('tasks', task)
+      database.insert('tasks', task);
 
-      return res.writeHead(201).end(JSON.stringify({ message: 'Task created successfully' }))
+      return res.writeHead(201).end(JSON.stringify({ message: 'Task created successfully' }));
     }
   },
   {
     method: 'PUT',
     path: buildRoutePath('/task/:id'),
     handler: async (req, res) => {
-      const { id } = req.params
-      const { title, description } = req.body
+      if (!validateTitleAndDescription(req, res)) return;
 
-      const task = await database.select('tasks', { id })
+      const { id } = req.params;
+      const { title, description } = req.body;
+
+      const task = await database.select('tasks', { id });
 
       if (!task) {
-        return taskNotFound(res)
-      };
+        return taskNotFound(res);
+      }
 
       database.update('tasks', id, {
         ...task,
         title: title ? title : task.title,
         description: description ? description : task.description,
         updated_at: new Date()
-      })
+      });
 
-      return res.writeHead(200).end(JSON.stringify({ message: 'Task updated successfully' }))
+      return res.writeHead(200).end(JSON.stringify({ message: 'Task updated successfully' }));
     }
   },
   {
@@ -88,7 +101,6 @@ export const routes = [
     path: buildRoutePath('/task/:id/complete'),
     handler: async(req, res) => {
       const { id } = req.params
-
       const task = await database.select('tasks', { id })
 
       if (!task) {
